@@ -1,7 +1,6 @@
 import pytest
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.expected_conditions import element_to_be_clickable
-from selenium.webdriver.support.wait import WebDriverWait
+from helpers.waits import wait_for_clickable
 
 
 @pytest.mark.smoke
@@ -23,9 +22,7 @@ def test_main_page_has_hero_heading(browser, base_url):
 def test_cta_button_leads_to_catalog(browser, base_url):
     """Клик по ссылке 'Каталог' в шапке ведёт на страницу каталога."""
     browser.get(base_url)
-    cta_button = WebDriverWait(browser, 10).until(element_to_be_clickable((By.PARTIAL_LINK_TEXT, "Каталог")))
-    cta_button.click()
-
+    wait_for_clickable(browser, (By.PARTIAL_LINK_TEXT, "Каталог")).click()
     assert "/catalog" in browser.current_url
 
 @pytest.mark.parametrize("url_text, expected_url", [
@@ -37,7 +34,5 @@ def test_cta_button_leads_to_catalog(browser, base_url):
 ])
 def test_header_link_leads_to_correct_page(browser, url_text, expected_url, base_url):
     browser.get(base_url)
-    cta_button = WebDriverWait(browser, 10).until(element_to_be_clickable((By.PARTIAL_LINK_TEXT, url_text)))
-    cta_button.click()
-
+    wait_for_clickable(browser, (By.PARTIAL_LINK_TEXT, url_text)).click()
     assert expected_url in browser.current_url
