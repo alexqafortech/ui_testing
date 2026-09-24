@@ -41,7 +41,7 @@ def test_add_to_cart_increases_counter_lambda(browser, base_url):
 
     assert final_counter_value == old_counter_value+1
     duration = time.time() - start
-    print(f"Логин занял {duration: .2f}s")
+    print(f"Тест занял {duration: .2f}s")
 
 @pytest.mark.cart
 def test_add_to_cart_increases_counter_factory(browser, base_url):
@@ -73,7 +73,7 @@ def test_add_to_cart_increases_counter_factory(browser, base_url):
 
     assert final_counter_value == old_counter_value + 1
     duration = time.time() - start
-    print(f"Логин занял {duration: .2f}s")
+    print(f"Тест занял {duration: .2f}s")
 
 @pytest.mark.cart
 def test_add_three_products_to_cart(browser, base_url):
@@ -117,7 +117,7 @@ def test_add_three_products_to_cart(browser, base_url):
 
     assert final_value == start_cart_value + 3, f"Ожидали в корзине {start_cart_value + 3}, но получили {final_value}"
     duration = time.time() - start
-    print(f"Логин занял {duration: .2f}s")
+    print(f"Тест занял {duration: .2f}s")
 
 @pytest.mark.cart
 def test_cart_page_shows_added_products(browser, base_url):
@@ -159,4 +159,4 @@ def test_cart_page_shows_added_products(browser, base_url):
 
     assert len(cart_products) == 1
     duration = time.time() - start
-    print(f"Логин занял {duration: .2f}s")
+    print(f"Тест занял {duration: .2f}s")

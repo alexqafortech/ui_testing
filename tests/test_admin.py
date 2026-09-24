@@ -23,7 +23,7 @@ def test_find_user_row_by_login (browser, base_url):
     assert item.text == "test_user@shopmarket.ru"
 
 @pytest.mark.admin
-def test_block_active_user(browser, base_url):
+def test_block_active_user(browser, base_url, refresh_data_base):
     browser.get(base_url + ADMIN_URL)
     wait_for_clickable(browser,(By.XPATH, "//td[contains(text(), 'ivanov_d')]/following-sibling::td[5]/div/button[contains(text(), 'Заблокировать')]")).click()
 
