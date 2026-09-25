@@ -1,11 +1,15 @@
 import pytest
 from pathlib import Path
-from helpers.waits import wait_for_clickable
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+
+from pages.login_page import LoginPage
+from pages.main_page import MainPage
+from pages.catalog_page import CatalogPage
+from pages.register_page import RegisterPage
+from pages.admin_page import AdminPage
+from pages.cart_page import CartPage
+from pages.profile_page import ProfilePage
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -55,47 +59,49 @@ def browser(request):
     driver.quit()
 
 @pytest.fixture
-def create_user_with_hard_password(browser):
-    browser.get("http://82.146.39.180:3000/register")
+def create_user_with_hard_password(register_page, admin_page, refresh_data_base):
+    register_page.open()
 
-    username = "test_hard_pass"
-    email = "test_hard_pass@test.com"
-    password = "HardPassword123!"
-    confirm = "HardPassword123!"
-    age = "20"
+    register_page.register(
+        username="test_hard_pass",
+        email="test_hard_pass@test.com",
+        password="HardPassword123!",
+        confirm="HardPassword123!",
+        age="20"
+    )
 
-    username_locator = (By.NAME, "login")
-    email_locator = (By.NAME, "email")
-    password_locator = (By.NAME, "password")
-    password_confirm_locator = (By.NAME, "passwordConfirm")
-    age_locator = (By.NAME, "age")
-    submit_button_locator = (By.CSS_SELECTOR, "button[type='submit']")
-
-    for locator, value in [
-        (username_locator, username),
-        (email_locator, email),
-        (password_locator, password),
-        (password_confirm_locator, confirm),
-        (age_locator, age),
-    ]:
-        input_field = browser.find_element(*locator)
-        input_field.clear()
-        input_field.send_keys(value)
-
-    wait_for_clickable(browser, submit_button_locator).click()
-
-    browser.get("http://82.146.39.180:3000/admin")
-    wait_for_clickable(browser, (By.XPATH, "//td[contains(text(), 'test_hard_pass')]/following-sibling::td[5]/div/button[contains(text(), 'Активировать')]")).click()
+    admin_page.open()
+    admin_page.activate_user()
 
 @pytest.fixture
-def refresh_data_base(browser):
+def login_page(browser):
+    return LoginPage(browser)
+
+@pytest.fixture
+def main_page(browser):
+    return MainPage(browser)
+
+@pytest.fixture
+def catalog_page(browser):
+    return CatalogPage(browser)
+
+@pytest.fixture
+def register_page(browser):
+    return RegisterPage(browser)
+
+@pytest.fixture
+def admin_page(browser):
+    return AdminPage(browser)
+
+@pytest.fixture
+def cart_page(browser):
+    return CartPage(browser)
+
+@pytest.fixture
+def profile_page(browser):
+    return ProfilePage(browser)
+@pytest.fixture
+def refresh_data_base(admin_page):
     yield
-
-    try:
-        browser.get("http://82.146.39.180:3000/admin")
-        wait_for_clickable(browser, (By.ID, "reset-db-btn")).click()
-        WebDriverWait(browser, 3).until(EC.alert_is_present())
-        browser.switch_to.alert.accept()
-    except Exception:
-        pass
-
+    admin_page.open()
+    admin_page.reload_data_base()

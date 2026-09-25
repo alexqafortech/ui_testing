@@ -1,48 +1,38 @@
 import pytest
-from selenium.webdriver.common.by import By
-from helpers.waits import wait_for_element, wait_for_clickable, wait_for_url_contains
-from selenium.webdriver.support.wait import WebDriverWait
-
-CATALOG_URL = "/catalog"
 
 @pytest.mark.catalog
-def test_catalog_displays_five_products(browser, base_url):
-    browser.get(base_url + CATALOG_URL)
+def test_catalog_displays_five_products(catalog_page):
+    catalog_page.open()
 
-    WebDriverWait(browser, 10).until(
-        lambda driver: len(driver.find_elements(By.CSS_SELECTOR, "#products-grid > div")) == 5
-    )
-
-    product_items = browser.find_elements(By.CSS_SELECTOR, "#products-grid > div")
-    assert len(product_items) == 5
+    products = len(catalog_page.get_products())
+    assert products == 5
 
 @pytest.mark.catalog
-def test_each_product_card_has_title_and_price(browser, base_url):
-    browser.get(base_url + CATALOG_URL)
+def test_each_product_card_has_title_and_price(catalog_page):
+    catalog_page.open()
 
-    WebDriverWait(browser, 10).until(
-        lambda driver: len(driver.find_elements(By.CSS_SELECTOR, "#products-grid > div")) >= 5
-    )
+    product_items = catalog_page.get_products()
 
-    product_items = browser.find_elements(By.CSS_SELECTOR, "#products-grid > div")
     assert len(product_items) == 5
     for card in product_items:
-        card.find_element(By.CSS_SELECTOR, "h3")
-        name_of_card = card.text.split("\n")[0]
-        price = card.text.split("\n")[2]
-        assert name_of_card is not None
-        assert price is not None
+        card_text = [
+            line.strip()
+            for line in card.text.splitlines()
+            if line.strip()
+        ]
+
+    assert card_text[0]
+    assert card_text[2]
 
 @pytest.mark.catalog
-def test_iphone_product_is_in_catalog(browser, base_url):
-    browser.get(base_url + CATALOG_URL)
+def test_iphone_product_is_in_catalog(catalog_page):
+    catalog_page.open()
 
-    iphone_item =wait_for_element(browser, (By.XPATH, "//h3[.='iPhone 15 Pro 256GB']")).find_element(By.XPATH, "//h3[.='iPhone 15 Pro 256GB']")
+    iphone_item = catalog_page.find(catalog_page.IPHONE_ITEM)
     assert iphone_item.is_displayed()
 
 @pytest.mark.catalog
-def test_clicking_product_card_opens_product_page(browser, base_url):
-    browser.get(base_url + CATALOG_URL)
-
-    wait_for_clickable(browser, (By.CSS_SELECTOR, "#products-grid > div:first-child > a")).click()
-    wait_for_url_contains(browser, "/product/1")
+def test_clicking_product_card_opens_product_page(catalog_page):
+    catalog_page.open()
+    catalog_page.click(catalog_page.FIRST_CARD)
+    catalog_page.wait_for_url_contains("/product/1")

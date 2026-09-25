@@ -1,41 +1,35 @@
 import pytest
 from selenium.webdriver.common.by import By
-from helpers.waits import wait_for_element, wait_for_clickable
-from selenium.webdriver.support.ui import WebDriverWait
 
 LOGIN_URL = "/login"
 
 @pytest.mark.auth
-def test_login_form_gas_required_field(browser, base_url):
-    browser.get(base_url + LOGIN_URL)
+def test_login_form_has_required_field(login_page):
+    login_page.open()
 
-    wait_for_element(browser, (By.CSS_SELECTOR, '[name="email"]'))
-    wait_for_element(browser, (By.CSS_SELECTOR, '[type="password"]'))
-    wait_for_element(browser, (By.CSS_SELECTOR, '[type="submit"]'))
-
-@pytest.mark.auth
-def test_login_with_valid_credentials(browser, base_url):
-    browser.get(base_url + LOGIN_URL)
-
-    wait_for_element(browser, (By.CSS_SELECTOR, '[name="email"]')).send_keys("test_user@shopmarket.ru")
-    wait_for_element(browser, (By.CSS_SELECTOR, '[type="password"]')).send_keys("Password123")
-    wait_for_clickable(browser, (By.CSS_SELECTOR, '[type="submit"]')).click()
-
-    WebDriverWait(browser, 10).until(lambda d: str(browser.current_url) == base_url+"/")
-    user_button = wait_for_element(browser, (By.CSS_SELECTOR, "div[class='relative group'] button:first-child"))
-
-    assert user_button.text == "Алексей Петров"
+    assert login_page.is_visible(login_page.EMAIL_INPUT) == True
+    assert login_page.is_visible(login_page.PASSWORD_INPUT) == True
+    assert login_page.is_visible(login_page.SUBMIT_BUTTON) == True
 
 @pytest.mark.auth
-def test_login_with_invalid_password_shows_error(browser, base_url):
-    browser.get(base_url + LOGIN_URL)
+def test_login_with_valid_credentials(login_page):
+    login_page.open()
 
-    wait_for_element(browser, (By.CSS_SELECTOR, '[name="email"]')).send_keys("test_user@shopmarket.ru")
-    wait_for_element(browser, (By.CSS_SELECTOR, '[type="password"]')).send_keys("WrongPassword")
-    wait_for_clickable(browser, (By.CSS_SELECTOR, '[type="submit"]')).click()
+    login_page.login("test_user@shopmarket.ru", "Password123")
+    name = login_page.get_logged_in_user()
 
-    wait_for_element(browser, (By.CSS_SELECTOR, '.error-message-container'))
+    assert name == "Алексей Петров"
 
+@pytest.mark.auth
+def test_login_with_invalid_password_shows_error(login_page):
+    login_page.open()
+
+    login_page.login("test_user@shopmarket.ru", "WrongPassword")
+    login_page.get_error_message()
+
+    assert login_page.is_visible(login_page.ERROR_MESSAGE) == True
+
+# Бонусное задание с разными вариантами поиска элемента, поэтому By остается
 @pytest.mark.auth
 @pytest.mark.parametrize(
     "strategy, value",
@@ -47,10 +41,7 @@ def test_login_with_invalid_password_shows_error(browser, base_url):
         pytest.param(By.XPATH, "//label[normalize-space()='Email']/following-sibling::input", id = "by_xpath_text"), # Четвертый/Пятый по приоритету, так же сломается при редизайне, или изменении значения label
     ]
 )
-def test_email_field_findable_by_different_strategies(browser, base_url, strategy, value):
-    browser.get(base_url + LOGIN_URL)
+def test_email_field_findable_by_different_strategies(login_page, strategy, value):
+    login_page.open()
 
-    email_element = wait_for_element(browser, (strategy, value))
-
-    assert email_element.is_displayed() == True
-    assert email_element.tag_name == "input"
+    assert login_page.find((strategy, value))

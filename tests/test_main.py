@@ -1,29 +1,26 @@
 import pytest
-from selenium.webdriver.common.by import By
-from helpers.waits import wait_for_clickable
-
 
 @pytest.mark.smoke
 @pytest.mark.main_page
-def test_main_page_has_correct_title(browser, base_url):
+def test_main_page_has_correct_title(main_page):
     """Главная страница BuggyShop загружается с корректным заголовком."""
-    browser.get(base_url)
-    assert "ШопМаркет" in browser.title
+    main_page.open()
+    assert "ШопМаркет" in main_page.get_hero_title()
 
 @pytest.mark.main_page
-def test_main_page_has_hero_heading(browser, base_url):
+def test_main_page_has_hero_heading(main_page):
     """На главной странице отображается заголовок hero-баннера."""
-    browser.get(base_url)
-    heading = browser.find_element(By.TAG_NAME, "h1")
+    main_page.open()
+    heading = main_page.find(main_page.HERO_TITLE)
     assert heading.is_displayed()
     assert heading.text.strip() != ""
 
 @pytest.mark.main_page
-def test_cta_button_leads_to_catalog(browser, base_url):
+def test_cta_button_leads_to_catalog(main_page):
     """Клик по ссылке 'Каталог' в шапке ведёт на страницу каталога."""
-    browser.get(base_url)
-    wait_for_clickable(browser, (By.PARTIAL_LINK_TEXT, "Каталог")).click()
-    assert "/catalog" in browser.current_url
+    main_page.open()
+    main_page.click_cta()
+    main_page.wait_for_url_contains("/catalog")
 
 @pytest.mark.parametrize("url_text, expected_url", [
     pytest.param("Каталог", "/catalog", id = "catalog_link"),
@@ -32,7 +29,7 @@ def test_cta_button_leads_to_catalog(browser, base_url):
     pytest.param("ШопМаркет", "/", id = "main_link"),
     pytest.param("Поддержка", "/support", id = "support_link")
 ])
-def test_header_link_leads_to_correct_page(browser, url_text, expected_url, base_url):
-    browser.get(base_url)
-    wait_for_clickable(browser, (By.PARTIAL_LINK_TEXT, url_text)).click()
-    assert expected_url in browser.current_url
+def test_header_link_leads_to_correct_page(main_page, url_text, expected_url):
+    main_page.open()
+    main_page.click((main_page.PARTIAL, url_text))
+    main_page.wait_for_url_contains(expected_url)
