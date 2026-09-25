@@ -1,0 +1,70 @@
+import pytest
+import time
+
+@pytest.mark.cart
+def test_add_to_cart_increases_counter_lambda(catalog_page):
+    start = time.time()
+
+    catalog_page.open()
+
+    try:
+        counter_value = catalog_page.find(catalog_page.CART_COUNTER).get_attribute("textContent").strip()
+        counter_value = int(counter_value) if counter_value else 0
+    except:
+        counter_value = 0
+
+    old_counter_value = counter_value
+
+    catalog_page.add_first_product_to_cart()
+    catalog_page.alert_accept()
+
+    final_counter_value = int(catalog_page.get_text(catalog_page.CART_COUNTER))
+
+    assert final_counter_value == old_counter_value+1
+    duration = time.time() - start
+    print(f"Тест занял {duration: .2f}s")
+
+@pytest.mark.cart
+def test_add_three_products_to_cart(catalog_page):
+    start = time.time()
+    catalog_page.open()
+
+    catalog_page.get_products()
+    start_cart_value = catalog_page.get_cart_count()
+
+    for index in range(3):
+        expected_value = start_cart_value + index + 1
+
+        catalog_page.add_product_to_cart(index)
+        catalog_page.alert_accept()
+        catalog_page.wait_for_cart_count(expected_value)
+
+    final_value = catalog_page.get_cart_count()
+
+    assert final_value == start_cart_value + 3, (
+        f"Ожидали в корзине {start_cart_value + 3}, "
+        f"но получили {final_value}"
+    )
+    duration = time.time() - start
+    print(f"Тест занял {duration: .2f}s")
+
+@pytest.mark.cart
+def test_cart_page_shows_added_products(catalog_page, cart_page):
+    start = time.time()
+    catalog_page.open()
+
+    catalog_page.get_products()
+
+    start_cart_value = catalog_page.get_cart_count()
+
+    catalog_page.add_first_product_to_cart()
+    catalog_page.alert_accept()
+    catalog_page.wait_for_cart_count(start_cart_value + 1)
+
+    cart_page.open()
+
+    cart_products = cart_page.get_cart_products()
+
+    assert len(cart_products) == 1
+    duration = time.time() - start
+    print(f"Тест занял {duration: .2f}s")
