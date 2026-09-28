@@ -1,6 +1,7 @@
 from pages.base_page import BasePage
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
+from components.header import HeaderComponent
+from selenium.webdriver.support.ui import WebDriverWait
 
 class RegisterPage(BasePage):
     PATH = "/register"
@@ -11,6 +12,10 @@ class RegisterPage(BasePage):
     AGE_LOCATOR = (By.NAME, "age")
     SUBMIT_BUTTON_LOCATOR = (By.CSS_SELECTOR, "button[type='submit']")
     REGISTER_MESSAGE_LOCATOR = (By.CSS_SELECTOR, "div[id='register-message']")
+
+    def __init__(self, driver, base_url = None):
+        super().__init__(driver, base_url) if base_url else super().__init__(driver)
+        self.header = HeaderComponent(driver)
 
     def open(self):
         return super().open(self.PATH)

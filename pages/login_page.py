@@ -1,5 +1,7 @@
 from pages.base_page import BasePage
 from selenium.webdriver.common.by import By
+from components.header import HeaderComponent
+from pages.main_page import MainPage
 
 class LoginPage(BasePage):
 
@@ -11,6 +13,10 @@ class LoginPage(BasePage):
     PARAM_1 = (By.NAME, "email")
     PATH = "/login"
 
+    def __init__(self, driver, base_url = None):
+        super().__init__(driver, base_url) if base_url else super().__init__(driver)
+        self.header = HeaderComponent(driver)
+
     def open(self):
         return super().open(self.PATH)
 
@@ -18,6 +24,9 @@ class LoginPage(BasePage):
         self.type_text(self.EMAIL_INPUT, email)
         self.type_text(self.PASSWORD_INPUT, password)
         self.click(self.SUBMIT_BUTTON)
+        main = MainPage(self.driver)
+        main.wait_for_url_contains("/")
+        return main
 
     def get_error_message(self) -> str:
         return self.get_text(self.ERROR_MESSAGE)

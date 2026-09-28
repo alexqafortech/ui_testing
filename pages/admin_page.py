@@ -1,4 +1,5 @@
 from pages.base_page import BasePage
+from components.header import HeaderComponent
 from selenium.webdriver.common.by import By
 
 class AdminPage(BasePage):
@@ -10,6 +11,10 @@ class AdminPage(BasePage):
     ACTIVATE_USER = (By.XPATH, "//td[contains(text(), 'test_hard_pass')]/following-sibling::td[5]/div/button[contains(text(), 'Активировать')]")
     TEXT_BLOCK_LOCATOR = (By.XPATH, "//td[contains(text(), 'ivanov_d')]/following-sibling::td[3]")
     RELOAD_LOCATOR = (By.ID, "reset-db-btn")
+
+    def __init__(self, driver, base_url = None):
+        super().__init__(driver, base_url) if base_url else super().__init__(driver)
+        self.header = HeaderComponent(driver)
 
     def open(self):
         return super().open(self.PATH)

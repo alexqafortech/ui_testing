@@ -1,9 +1,9 @@
 import pytest
+from components.product_card import ProductCard
 
 @pytest.mark.catalog
-def test_catalog_displays_five_products(catalog_page):
+def test_catalog_displays_five_products(catalog_page_auth, catalog_page):
     catalog_page.open()
-
     products = len(catalog_page.get_products())
     assert products == 5
 
@@ -36,3 +36,14 @@ def test_clicking_product_card_opens_product_page(catalog_page):
     catalog_page.open()
     catalog_page.click(catalog_page.FIRST_CARD)
     catalog_page.wait_for_url_contains("/product/1")
+
+@pytest.mark.catalog
+def test_each_product_card_complete(catalog_page):
+    catalog_page.open()
+
+    cards = catalog_page.get_products()
+
+    for card_item in cards:
+        card = ProductCard(card_item)
+        assert card.get_title() != ""
+        assert card.get_price() != ""

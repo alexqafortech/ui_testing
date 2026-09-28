@@ -2,6 +2,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.keys import Keys
 
 DEFAULT_TIMEOUT = 10
 BASE_URL = "http://82.146.39.180:3000"
@@ -44,6 +45,8 @@ class BasePage:
 
     def type_text(self, locator: tuple, text: str):
         element = self.find(locator)
+        element.send_keys(Keys.CONTROL + "a")
+        element.send_keys(Keys.BACKSPACE)
         element.clear()
         element.send_keys(text)
 

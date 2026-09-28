@@ -1,5 +1,6 @@
 from pages.base_page import BasePage
 from selenium.webdriver.common.by import By
+from components.header import HeaderComponent
 from selenium.webdriver.common.action_chains import ActionChains
 
 class MainPage(BasePage):
@@ -10,6 +11,10 @@ class MainPage(BasePage):
     USER_MENU = (By.CSS_SELECTOR, "div[class='relative group']")
     PROFILE_LINK = (By.CSS_SELECTOR, "a[href='/profile']")
     PATH = "/"
+
+    def __init__(self, driver, base_url = None):
+        super().__init__(driver, base_url) if base_url else super().__init__(driver)
+        self.header = HeaderComponent(driver)
 
     def open(self):
         return super().open(self.PATH)
