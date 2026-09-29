@@ -11,6 +11,7 @@ def test_login_form_has_required_field(login_page):
     assert login_page.is_visible(login_page.PASSWORD_INPUT) == True
     assert login_page.is_visible(login_page.SUBMIT_BUTTON) == True
 
+@pytest.mark.smoke
 @pytest.mark.auth
 def test_login_with_valid_credentials(login_page):
     login_page.open()

@@ -3,6 +3,7 @@ from components.header import HeaderComponent
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import time
 import json
 
 class CatalogPage(BasePage):
@@ -33,13 +34,16 @@ class CatalogPage(BasePage):
 
     def add_product_to_cart(self, index: int):
         products = self.get_products()
+        time.sleep(0.15)
         products[index].find_element(*self.ADD_TO_CART_BTN).click()
-        alert = WebDriverWait(self.driver, 10).until(EC.alert_is_present())
-        alert.accept()
+        time.sleep(0.15)
+        self.alert_accept()
 
     def wait_for_cart_count(self, expected_count: int):
-        self.wait_until(
-            lambda _: self.header.get_cart_count() == expected_count
+        return self.wait_until(
+            lambda _: self.header.get_cart_count()
+            if self.header.get_cart_count() == expected_count
+            else False
         )
 
     def get_localstorage_cart_count(self) -> int:
@@ -56,3 +60,10 @@ class CatalogPage(BasePage):
         self.driver.execute_script(
             "localStorage.removeItem('cart_items')"
         )
+
+    def add_product_to_cart_and_wait(self, index: int, expected_count: int):
+        products = self.get_products()
+
+        products[index].find_element(*self.ADD_TO_CART_BTN).click()
+        self.alert_accept()
+        self.wait_for_cart_count(expected_count)

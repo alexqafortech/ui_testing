@@ -6,7 +6,7 @@ from components.header import HeaderComponent
 from selenium.webdriver.common.by import By
 import json
 from pages.orders_page import OrdersPage
-
+from selenium.common.exceptions import TimeoutException
 
 class CartPage(BasePage):
 
@@ -47,9 +47,24 @@ class CartPage(BasePage):
             "localStorage.removeItem('cart_items')"
         )
 
-    def wait_for_cart_count(self, expected_count: int):
+    def wait_for_cart_count(self, expected_count: int, timeout=10):
+        return self.wait_until(
+            lambda driver: self.header.get_cart_count() == expected_count,
+            timeout=timeout
+        )
+
+    def wait_for_items_count(self, expected_count: int):
+        return self.wait_until(
+            lambda _: len(self.driver.find_elements(*self.CART_PRODUCTS_LOCATOR))
+            if len(self.driver.find_elements(*self.CART_PRODUCTS_LOCATOR)) >= expected_count
+            else False
+        )
+
+    def apply_promo_and_wait(self, code: str, old_total: str):
+        self.apply_promo(code)
+
         self.wait_until(
-            lambda _: self.header.get_cart_count() == expected_count
+            lambda _: self.get_total() != old_total
         )
 
     def apply_promo(self, code):
@@ -80,5 +95,11 @@ class CartPage(BasePage):
         orders.wait_for_url_contains("/orders")
         return orders
 
-    def is_visible_discount(self):
-        return super().is_visible(self.DISCOUNT_SUM_LOCATOR)
+    def is_visible_discount(self, timeout = 3):
+        try:
+            WebDriverWait(self.driver, timeout).until(
+                EC.visibility_of_element_located(self.DISCOUNT_SUM_LOCATOR)
+            )
+            return True
+        except TimeoutException:
+            return False

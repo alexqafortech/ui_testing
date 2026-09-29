@@ -25,9 +25,6 @@ class MainPage(BasePage):
     def click_cta(self):
         self.click(self.CTA_BUTTON)
 
-    def get_product_count(self) -> int:
-        return len(self.find_all(self.PRODUCTS_CARDS))
-
     def open_user_profile(self):
         user_menu = self.find(self.USER_MENU)
 

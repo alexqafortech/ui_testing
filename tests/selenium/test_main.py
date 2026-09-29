@@ -7,6 +7,7 @@ def test_main_page_has_correct_title(main_page):
     main_page.open()
     assert "ШопМаркет" in main_page.get_hero_title()
 
+@pytest.mark.smoke
 @pytest.mark.main_page
 def test_main_page_has_hero_heading(main_page):
     """На главной странице отображается заголовок hero-баннера."""
@@ -15,6 +16,7 @@ def test_main_page_has_hero_heading(main_page):
     assert heading.is_displayed()
     assert heading.text.strip() != ""
 
+@pytest.mark.smoke
 @pytest.mark.main_page
 def test_cta_button_leads_to_catalog(main_page):
     """Клик по ссылке 'Каталог' в шапке ведёт на страницу каталога."""

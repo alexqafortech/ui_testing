@@ -1,9 +1,9 @@
+import os
 import pytest
 import requests
 from pathlib import Path
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-
 from pages.login_page import LoginPage
 from pages.main_page import MainPage
 from pages.catalog_page import CatalogPage
@@ -12,6 +12,9 @@ from pages.admin_page import AdminPage
 from pages.cart_page import CartPage
 from pages.profile_page import ProfilePage
 from pages.orders_page import OrdersPage
+
+
+BASE_URL = os.getenv("BASE_URL")
 
 def pytest_addoption(parser):
     parser.addoption(
@@ -31,10 +34,20 @@ def pytest_runtest_makereport(item, call):
 
 @pytest.fixture(scope = "session")
 def base_url():
-    return "http://82.146.39.180:3000"
+    return "http://82.146.39.180:3000/"
 
+# Playwright
 @pytest.fixture
-def browser(request):
+def browser_context_args(browser_context_args):
+    return {
+        **browser_context_args,
+        "base_url": "http://82.146.39.180:3000/",
+        "viewport": {"width": 1920, "height": 1080},
+    }
+
+# Selenium
+@pytest.fixture
+def driver(request):
     """Запускает Chrome перед тестом и закрывает после."""
     options = Options()
     if request.config.getoption("--browser-mode") == "headless":
@@ -76,36 +89,36 @@ def create_user_with_hard_password(register_page, admin_page, refresh_data_base)
     admin_page.activate_user()
 
 @pytest.fixture
-def login_page(browser):
-    return LoginPage(browser)
+def login_page(driver):
+    return LoginPage(driver)
 
 @pytest.fixture
-def main_page(browser):
-    return MainPage(browser)
+def main_page(driver):
+    return MainPage(driver)
 
 @pytest.fixture
-def catalog_page(browser):
-    return CatalogPage(browser)
+def catalog_page(driver):
+    return CatalogPage(driver)
 
 @pytest.fixture
-def register_page(browser):
-    return RegisterPage(browser)
+def register_page(driver):
+    return RegisterPage(driver)
 
 @pytest.fixture
-def admin_page(browser):
-    return AdminPage(browser)
+def admin_page(driver):
+    return AdminPage(driver)
 
 @pytest.fixture
-def cart_page(browser):
-    return CartPage(browser)
+def cart_page(driver):
+    return CartPage(driver)
 
 @pytest.fixture
-def profile_page(browser):
-    return ProfilePage(browser)
+def profile_page(driver):
+    return ProfilePage(driver)
 
 @pytest.fixture
-def orders_page(browser):
-    return OrdersPage(browser)
+def orders_page(driver):
+    return OrdersPage(driver)
 
 @pytest.fixture
 def refresh_data_base(admin_page):
@@ -114,10 +127,10 @@ def refresh_data_base(admin_page):
     admin_page.reload_data_base()
 
 @pytest.fixture
-def authenticated_driver(browser, create_user_with_hard_password):
-    login = LoginPage(browser)
+def authenticated_driver(driver, create_user_with_hard_password):
+    login = LoginPage(driver)
     login.open().login("test_hard_pass@test.com", "HardPassword123!")
-    return browser
+    return driver
 
 @pytest.fixture
 def catalog_page_auth(authenticated_driver):
@@ -127,3 +140,4 @@ def catalog_page_auth(authenticated_driver):
 def reset_db(base_url):
     requests.post(f"{base_url}/api/admin/reset-db")
     yield
+    requests.post(f"{base_url}/api/admin/reset-db")

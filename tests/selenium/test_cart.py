@@ -4,21 +4,28 @@ import time
 @pytest.mark.cart
 def test_add_to_cart_increases_counter_lambda(catalog_page):
     start = time.time()
-
     catalog_page.open()
 
-    counter_value = catalog_page.header.get_cart_count()
+    catalog_page.get_products()
+    start_cart_value = catalog_page.header.get_cart_count()
 
-    old_counter_value = counter_value
+    for index in range(3):
+        expected_value = start_cart_value + index + 1
 
-    catalog_page.add_first_product_to_cart()
-    catalog_page.alert_accept()
+        catalog_page.add_product_to_cart_and_wait(
+            index,
+            expected_value
+        )
 
-    final_counter_value = int(catalog_page.get_text(catalog_page.CART_COUNTER))
+    final_value = catalog_page.header.get_cart_count()
 
-    assert final_counter_value == old_counter_value+1
+    assert final_value == start_cart_value + 3, (
+        f"Ожидали в корзине {start_cart_value + 3}, "
+        f"но получили {final_value}"
+    )
+
     duration = time.time() - start
-    print(f"Тест занял {duration: .2f}s")
+    print(f"Тест занял {duration:.2f}s")
 
 @pytest.mark.cart
 def test_add_three_products_to_cart(catalog_page):

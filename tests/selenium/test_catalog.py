@@ -1,6 +1,7 @@
 import pytest
 from components.product_card import ProductCard
 
+@pytest.mark.smoke
 @pytest.mark.catalog
 def test_catalog_displays_five_products(catalog_page_auth, catalog_page):
     catalog_page.open()
