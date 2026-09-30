@@ -1,7 +1,9 @@
 import os
 import pytest
+import json
 import requests
 from pathlib import Path
+from playwright.sync_api import expect
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from pages.login_page import LoginPage
@@ -44,6 +46,50 @@ def browser_context_args(browser_context_args):
         "base_url": "http://82.146.39.180:3000/",
         "viewport": {"width": 1920, "height": 1080},
     }
+
+@pytest.fixture(scope = "session")
+def storage_state_path(browser, tmp_path_factory):
+    path = tmp_path_factory.mktemp("auth") / "state.json"
+    context = browser.new_context(base_url="http://82.146.39.180:3000")
+    page = context.new_page()
+
+    page.goto("/login")
+    page.get_by_role("textbox", name="email").fill("test_user@shopmarket.ru")
+    page.get_by_role("textbox", name="Ваш пароль").fill("Password123")
+    page.get_by_role("button", name="Войти").click()
+    expect(page.get_by_text("Алексей Петров")).to_be_visible()
+
+    context.storage_state(path=str(path))
+    context.close()
+    return str(path)
+
+@pytest.fixture(scope="session")
+def storage_state_path_api(playwright, tmp_path_factory):
+    path = tmp_path_factory.mktemp("auth") / "state_api.json"
+    request_context = playwright.request.new_context(base_url="http://82.146.39.180:3000")
+
+    response = request_context.post("/api/auth/login", data={
+        "email": "test_user@shopmarket.ru",
+        "password": "Password123",
+        "rememberMe": False
+    })
+    assert response.status == 200
+
+    request_context.storage_state(path=str(path))
+    request_context.dispose()
+    return str(path)
+
+@pytest.fixture
+def authenticated_page(browser, storage_state_path_api):
+    context = browser.new_context(
+        base_url = "http://82.146.39.180:3000/",
+        storage_state = storage_state_path_api,
+    )
+    page = context.new_page()
+    page.goto("/catalog")
+
+    yield page
+    context.close()
 
 # Selenium
 @pytest.fixture
@@ -136,8 +182,7 @@ def authenticated_driver(driver, create_user_with_hard_password):
 def catalog_page_auth(authenticated_driver):
     return CatalogPage(authenticated_driver)
 
-@pytest.fixture
-def reset_db(base_url):
-    requests.post(f"{base_url}/api/admin/reset-db")
+@pytest.fixture()
+def reset_db():
     yield
-    requests.post(f"{base_url}/api/admin/reset-db")
+    requests.post("http://82.146.39.180:3000/api/admin/reset-db")
