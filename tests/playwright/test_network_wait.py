@@ -1,14 +1,6 @@
 import pytest
 from playwright.sync_api import expect
 
-# Проблема этих тестов состоит в том, что без авторизации не отправляются запросы /api/cart, которые нам нужны для
-# проверки, вместо них получаем запрос me со статусом 401.
-# Если же мы будем делать с авторизацией, то наткнемся на проблему, что количество товаров в корзине растёт, из-за
-# этого третий тест уже падает. Если мы будем сбрасывать БД, то не сможем воспользоваться общей сессией, потому что
-# вместе с очисткой БД, у нас будет удаляться и id сессии, в связи с чем тесты начнут падать уже со второго. Очистка
-# localstorage могла бы сработать, в случае, если бы мы не авторизировались, но так как нам необходимо авторизация,
-# нам нужно "сбрасывать" БД
-
 @pytest.mark.network
 def test_add_to_cart_sends_request(authenticated_page):
     # Без авторизации api/cart не отправляется
@@ -62,8 +54,4 @@ def test_add_to_cart_full(authenticated_page):
 
     expect(counter).to_have_text(str(initial_count + 1))
 
-    # Пользователь авторизован -> данные хранятся не в localStorage, а в БД
-    #page.wait_for_function("localStorage.getItem('cart_items') !== null")
-    #localstorage = page.evaluate("localStorage.getItem('cart_items')")
-    #assert localstorage is not None
 

@@ -3,7 +3,16 @@ import pytest
 import json
 import requests
 from pathlib import Path
+
+#Playwright imports
 from playwright.sync_api import expect
+from pages.playwright.base_page import PlaywrightBasePage
+from pages.playwright.login_page import PlaywrightLoginPage
+from pages.playwright.catalog_page import PlaywrightCatalogPage
+from pages.playwright.cart_page import PlaywrightCartPage
+from pages.playwright.orders_page import PlaywrightOrdersPage
+
+#Selenium imports
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from pages.login_page import LoginPage
@@ -90,6 +99,31 @@ def authenticated_page(browser, storage_state_path_api):
 
     yield page
     context.close()
+
+@pytest.fixture
+def playwright_catalog_page_auth(authenticated_page):
+    return PlaywrightCatalogPage(authenticated_page)
+
+@pytest.fixture
+def playwright_base_page(page):
+    return PlaywrightBasePage(page)
+
+@pytest.fixture
+def playwright_login_page(page):
+    return PlaywrightLoginPage(page)
+
+@pytest.fixture
+def playwright_catalog_page(page):
+    return PlaywrightCatalogPage(page)
+
+@pytest.fixture
+def playwright_cart_page(page):
+    return PlaywrightCartPage(page)
+
+@pytest.fixture
+def playwright_orders_page(page):
+    return PlaywrightOrdersPage(page)
+
 
 # Selenium
 @pytest.fixture
