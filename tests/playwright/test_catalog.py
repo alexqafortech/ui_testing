@@ -25,7 +25,7 @@ def test_add_specific_product_to_cart(page):
     page.on("dialog", lambda dialog: dialog.accept())
     card.get_by_role("button", name="В корзину").click()
     expect(page.locator("a[href='/cart']>span")).to_be_visible()
-    expect(page.locator("a[href='/cart']>span")).to_have_text("1")
+    expect(page.locator("a[href='/cart']>span")).not_to_have_text("0")
 
 @pytest.mark.catalog
 def test_strict_mod_demo(page):

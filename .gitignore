@@ -6,3 +6,7 @@ __pycache__/
 .idea
 
 .env
+
+test-results/
+
+trace.zip

@@ -1,6 +1,6 @@
 import os
 import pytest
-import json
+import uuid
 import requests
 from pathlib import Path
 
@@ -49,12 +49,29 @@ def base_url():
 
 # Playwright
 @pytest.fixture
-def browser_context_args(browser_context_args):
+def browser_context_args(browser_context_args, storage_state_path_api):
     return {
         **browser_context_args,
         "base_url": "http://82.146.39.180:3000/",
         "viewport": {"width": 1920, "height": 1080},
+        "storage_state": storage_state_path_api
     }
+
+@pytest.fixture
+def parallel_page(browser):
+    context = browser.new_context(
+        base_url="http://82.146.39.180:3000/",
+        viewport={
+            "width": 1920,
+            "height": 1080
+        }
+    )
+
+    page = context.new_page()
+
+    yield page
+
+    context.close()
 
 @pytest.fixture(scope = "session")
 def storage_state_path(browser, tmp_path_factory):
@@ -99,6 +116,7 @@ def authenticated_page(browser, storage_state_path_api):
 
     yield page
     context.close()
+    return page
 
 @pytest.fixture
 def playwright_catalog_page_auth(authenticated_page):
@@ -220,3 +238,37 @@ def catalog_page_auth(authenticated_driver):
 def reset_db():
     yield
     requests.post("http://82.146.39.180:3000/api/admin/reset-db")
+
+@pytest.fixture
+def parallel_user():
+    user_id = uuid.uuid4().hex[:8]
+
+    return {
+        "username": f"ivanov{user_id}",
+        "email": f"ivanov_{user_id}@mail.ru",
+        "password": "Password123",
+        "age": "20"
+    }
+
+@pytest.fixture
+def parallel_user_registered(parallel_user, admin_page):
+    response = requests.post(
+        "http://82.146.39.180:3000/api/auth/register",
+        json={
+            "login": parallel_user["username"],
+            "email": parallel_user["email"],
+            "password": parallel_user["password"],
+            "passwordConfirm": parallel_user["password"],
+            "age": parallel_user["age"],
+        }
+    )
+
+    assert response.status_code == 201, (
+        f"Регистрация не удалась: "
+        f"{response.status_code} {response.text}"
+    )
+
+    admin_page.open()
+    admin_page.activate_user(parallel_user["username"])
+
+    return parallel_user

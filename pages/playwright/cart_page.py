@@ -19,6 +19,9 @@ class PlaywrightCartPage(PlaywrightBasePage):
         self.navigate(PATH)
         return self
 
+    def get_cart_item(self):
+        return self.cart_item
+
     def apply_promo(self, code: str):
         self.promo_input.fill(code)
         self.promo_button.click()

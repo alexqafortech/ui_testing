@@ -21,6 +21,7 @@ class PlaywrightLoginPage(PlaywrightBasePage):
         self.email.fill(email)
         self.password.fill(password)
         self.submit.click()
+        return self
 
     def get_error(self):
         return self.error

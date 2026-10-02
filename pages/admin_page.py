@@ -26,5 +26,9 @@ class AdminPage(BasePage):
         self.click(self.RELOAD_LOCATOR)
         self.alert_accept()
 
-    def activate_user(self):
-        self.click(self.ACTIVATE_USER)
+    def activate_user(self, username="test_hard_pass"):
+        locator = (
+            By.XPATH,
+            f"//td[contains(text(), '{username}')]/following-sibling::td[5]/div/button[contains(text(), 'Активировать')]"
+        )
+        self.click(locator)
