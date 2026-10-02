@@ -4,3 +4,9 @@ __pycache__/
 .pytest_cache/
 *.pyc
 .idea
+
+.env
+
+test-results/
+
+trace.zip
