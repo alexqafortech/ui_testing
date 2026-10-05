@@ -26,14 +26,26 @@ from pages.orders_page import OrdersPage
 
 
 BASE_URL = os.getenv("BASE_URL")
+SELENOID_URL = os.getenv("SELENOID_URL") or "http://localhost:4444/wd/hub"
 
 def pytest_addoption(parser):
+    parser.addoption(
+        "--remote",
+        action="store_true",
+        help = "Запускать браузеры на Selenoid вместо локального",
+    )
+    parser.addoption(
+        "--selenoid-url",
+        action="store",
+        default=SELENOID_URL,
+        help="URL Selenoid",
+    )
     parser.addoption(
         "--browser-mode",
         action="store",
         default="headless",
-        choices = ["headless", "headed"],
-        help = "Режим запуска браузера: headless (фон) или headed (с окном)",
+        choices=["headless", "headed"],
+        help="Режим запуска браузера: headless (фон) или headed (с окном)",
     )
 
 @pytest.hookimpl(hookwrapper = True, tryfirst = True)
@@ -144,32 +156,77 @@ def playwright_orders_page(page):
 
 
 # Selenium
-@pytest.fixture
+@pytest.fixture(params=["chrome", "firefox"])
 def driver(request):
     """Запускает Chrome перед тестом и закрывает после."""
-    options = Options()
-    if request.config.getoption("--browser-mode") == "headless":
-        options.add_argument("--headless=new")
 
-    options.add_argument("--window-size=1920,1080")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--disable-features=PasswordLeakDetection")
-    prefs = {
-        "credentials_enable_service": False,
-        "profile.password_manager_enabled": False
-    }
-    options.add_experimental_option("prefs", prefs)
+    test_name = request.node.name.replace("[", "_").replace("]", "_")
+    video_filename = f"{test_name}.mp4"
 
-    driver = webdriver.Chrome(options = options)
+    if request.param == "chrome":
+        options = webdriver.ChromeOptions()
+    else:
+        options = webdriver.FirefoxOptions()
+
+    if request.config.getoption("--remote"):
+        options.set_capability("browserName", request.param)
+        options.set_capability("selenoid:options", {
+            "enableVNC": True,
+            "enableVideo": True,
+            "videoName": video_filename,
+            "screenResolution": "1920x1080x24",
+            "name": request.node.name,
+        })
+        selenoid_url = request.config.getoption("--selenoid-url")
+        driver = webdriver.Remote(command_executor=selenoid_url, options=options)
+    else:
+        if request.config.getoption("--browser-mode") == "headless":
+            options.add_argument("--headless")
+        options.add_argument("--window-size=1920,1080")
+
+        if request.param == "chrome":
+            options.add_argument("--disable-gpu")
+            options.add_argument("--disable-features=PasswordLeakDetection")
+            prefs = {
+                "credentials_enable_service": False,
+                "profile.password_manager_enabled": False
+            }
+            options.add_experimental_option("prefs", prefs)
+            driver = webdriver.Chrome(options=options)
+        else:
+            options.add_argument("--width=1920")
+            options.add_argument("--height=1080")
+            options.binary_location = "/usr/bin/firefox"
+            driver = webdriver.Firefox(options=options)
+
     yield driver
 
-    if hasattr(request.node, "rep_call") and request.node.rep_call.failed:
-        screenshots_dir = Path("screenshots")
-        screenshots_dir.mkdir(exist_ok=True)
-        screenshot_path = screenshots_dir / f"{request.node.name}.png"
-        driver.save_screenshot(str(screenshot_path))
-        print(f"\nСкриншот сохранён: {screenshot_path}")
+    is_failed = hasattr(request.node, "rep_call") and request.node.rep_call.failed
+
+    if is_failed:
+        if not request.config.getoption("--remote"):
+            screenshots_dir = Path("screenshots")
+            screenshots_dir.mkdir(exist_ok=True)
+            screenshot_path = screenshots_dir / f"{test_name}.png"
+            driver.save_screenshot(str(screenshot_path))
+            print(f"\nСкриншот сохранён: {screenshot_path}")
+        else:
+            print(f"\nТест упал! Видео сохранено в Selenoid под именем: {video_filename}")
+
     driver.quit()
+
+    if request.config.getoption("--remote") and not is_failed:
+        from urllib.parse import urlparse
+        parsed_url = urlparse(selenoid_url)
+        base_selenoid_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+
+        try:
+            delete_url = f"{base_selenoid_url}/video/{video_filename}"
+            response = requests.delete(delete_url)
+            if response.status_code == 200:
+                print(f"\nВидео успешного теста {video_filename} удалено.")
+        except Exception as e:
+            print(f"\nНе удалось удалить видео успешного теста: {e}")
 
 @pytest.fixture
 def create_user_with_hard_password(register_page, admin_page, refresh_data_base):
