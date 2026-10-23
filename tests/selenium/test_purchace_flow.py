@@ -1,4 +1,4 @@
-def test_full_purchase_flow(login_page, catalog_page, cart_page, orders_page, reset_db):
+def test_full_purchase_flow(login_page, catalog_page, cart_page, orders_page):
     # Вход в аккаунт
     login_page.open()
     login_page.login("test_user@shopmarket.ru", "Password123")

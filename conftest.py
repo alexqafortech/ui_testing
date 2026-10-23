@@ -196,7 +196,6 @@ def driver(request):
         else:
             options.add_argument("--width=1920")
             options.add_argument("--height=1080")
-            options.binary_location = "/usr/bin/firefox"
             driver = webdriver.Firefox(options=options)
 
     yield driver
@@ -229,7 +228,7 @@ def driver(request):
             print(f"\nНе удалось удалить видео успешного теста: {e}")
 
 @pytest.fixture
-def create_user_with_hard_password(register_page, admin_page, refresh_data_base):
+def create_user_with_hard_password(register_page, admin_page):
     register_page.open()
 
     register_page.register(
@@ -282,7 +281,7 @@ def refresh_data_base(admin_page):
     admin_page.reload_data_base()
 
 @pytest.fixture
-def authenticated_driver(driver, create_user_with_hard_password):
+def authenticated_driver(driver, parallel_user_registered, parallel_user):
     login = LoginPage(driver)
     login.open().login("test_hard_pass@test.com", "HardPassword123!")
     return driver
@@ -290,11 +289,6 @@ def authenticated_driver(driver, create_user_with_hard_password):
 @pytest.fixture
 def catalog_page_auth(authenticated_driver):
     return CatalogPage(authenticated_driver)
-
-@pytest.fixture()
-def reset_db():
-    yield
-    requests.post("http://82.146.39.180:3000/api/admin/reset-db")
 
 @pytest.fixture
 def parallel_user():

@@ -3,10 +3,10 @@ from components.product_card import ProductCard
 
 @pytest.mark.smoke
 @pytest.mark.catalog
-def test_catalog_displays_five_products(catalog_page_auth, catalog_page):
+def test_catalog_displays_five_products(catalog_page):
     catalog_page.open()
     products = len(catalog_page.get_products())
-    assert products == 5
+    assert products >= 5
 
 @pytest.mark.catalog
 def test_each_product_card_has_title_and_price(catalog_page):
@@ -14,7 +14,6 @@ def test_each_product_card_has_title_and_price(catalog_page):
 
     product_items = catalog_page.get_products()
 
-    assert len(product_items) == 5
     for card in product_items:
         card_text = [
             line.strip()

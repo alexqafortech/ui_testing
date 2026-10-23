@@ -5,7 +5,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 
 class MainPage(BasePage):
     HERO_TITLE = (By.CSS_SELECTOR, "a[href='/']")
-    CTA_BUTTON = (By.PARTIAL_LINK_TEXT, "Каталог")
+    CTA_BUTTON = (By.XPATH, "//a[contains(text(), 'Купить')]")
     PRODUCTS_CARDS = (By.CSS_SELECTOR, "div[id = 'featured-products']> div")
     PARTIAL = By.PARTIAL_LINK_TEXT
     USER_MENU = (By.CSS_SELECTOR, "div[class='relative group']")

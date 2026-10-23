@@ -18,5 +18,5 @@ def test_register_form_playwright(page):
     page.locator("input[name='age']").fill(age)
 
     page.get_by_role("button", name="Зарегистрироваться").click()
-    expect(page.get_by_text("успешна")).to_be_visible()
+    expect(page.get_by_text("Регистрация успешна!")).to_be_visible()
 

@@ -4,8 +4,8 @@ from selenium.webdriver.common.by import By
 
 class OrdersPage(BasePage):
     PATH = "/orders"
-    ORDER_ROW = (By.CSS_SELECTOR, "div[id='orders-content'] a")
-    ORDER_STATUS = (By.CSS_SELECTOR, "div[class='text-right'] span")
+    ORDER_ROW = (By.XPATH, "//a[contains(@href, '/orders/')]")
+    ORDER_STATUS = (By.XPATH, "//span[contains(@class, 'status')]")
 
     def open(self):
         return super().open(self.PATH)

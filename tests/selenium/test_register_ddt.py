@@ -16,7 +16,7 @@ def test_register_validation(register_page, username, email, password, confirm, 
 
 @pytest.mark.cart
 @pytest.mark.parametrize("code, should_discount", PROMO_CODES)
-def test_promo_codes(code, should_discount, catalog_page_auth, catalog_page, cart_page, reset_db):
+def test_promo_codes(code, should_discount, catalog_page, cart_page):
     catalog_page.open()
     catalog_page.add_product_to_cart(1)
 

@@ -21,13 +21,13 @@ def test_add_to_cart_sends_request(parallel_page, parallel_user_registered):
     page.wait_for_load_state("networkidle")
 
     counter = page.locator("a[href='/cart']>span")
-    initial_count = int(counter.text_content()) if counter.is_visible() else 0
+    initial_count = int(counter.text_content())
 
 
     with page.expect_response("**/api/cart**") as resp:
         catalog.add_product_by_name("iPhone 15")
 
-    assert resp.value.status == 200 or resp.value.status == 201
+    assert resp.value.status == 200
     assert resp.value.json()
 
     expect(counter).to_have_text(str(initial_count + 1))

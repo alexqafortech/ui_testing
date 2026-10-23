@@ -13,7 +13,13 @@ def test_find_user_row_by_login (admin_page):
     assert item == "test_user@shopmarket.ru"
 
 @pytest.mark.admin
-def test_block_active_user(admin_page):
+def test_block_active_user(admin_page, request):
+    current_browser = request.node.callspec.params.get("driver")
+
+    if current_browser != "chrome":
+        pytest.skip("Необходимо только одно выполнение")
+        # Из-за того, что статус пользователя не сбрасывается, при втором выполнении в прогоне тест падает
+
     admin_page.open()
 
     admin_page.click(admin_page.BLOCK_USER)
